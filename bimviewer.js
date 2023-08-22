@@ -1,3 +1,5 @@
+/*import { Scene } from "three";
+
 import { Color } from "three";
 import { IfcViewerAPI } from "web-ifc-viewer";
 import {
@@ -49,9 +51,10 @@ const viewer = new IfcViewerAPI({
   backgroundColor: new Color(255, 255, 255),
 });
 
-viewer.axes.setAxes();
-viewer.grid.setGrid();
-
+viewer.axes.setAxes(); // tạo gốc tạo độ x, y, z
+// viewer.grid.setGrid(); // tạo lưới
+console.log(viewer);
+// get id trên url -> ss với id của project -> load model
 const currentUrl = window.location.href;
 const url = new URL(currentUrl);
 const currentProjectID = url.searchParams.get("id"); //bimserver project id - use this to get latest revision etc
@@ -59,6 +62,7 @@ const currentProjectID = url.searchParams.get("id"); //bimserver project id - us
 async function loadIfc(url) {
   // Load the model
   const model = await viewer.IFC.loadIfcUrl(url);
+  console.log("model", model);
 
   // Add dropped shadow and post-processing efect
   await viewer.shadowDropper.renderShadow(model.modelID);
@@ -77,25 +81,25 @@ const scene = viewer.context.getScene(); //for showing/hiding categories
 let path;
 
 for (let proj of projects) {
-
   if (proj.id === currentProjectID) {
     let fileName = proj.name;
     path = "./models/" + fileName + ".ifc"; // get path into this
-    //console.log(path);
+    console.log(path);
   }
 }
 
 loadIfc(path);
 
-//UI elements
+// create UI elements
 
 createIfcPropertyMenu();
 
 const propsGUI = document.getElementById("ifc-property-menu-root");
 
+// tạo ra các button click trong models
 createIfcTreeMenu();
-createCheckboxes();
-createHelpInfo();
+createCheckboxes(); // checkbox -> hide property
+createHelpInfo(); // display info about button
 toolbarTop();
 toolbarBottom();
 
@@ -103,21 +107,22 @@ toolbarBottom();
 window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
 
 window.ondblclick = async () => {
-  const result = await viewer.IFC.selector.pickIfcItem(); //highlightIfcItem hides all other elements
+  const result = await viewer.IFC.selector.pickIfcItem(); //highlight IfcItem hides all other elements
   if (!result) return;
   const { modelID, id } = result;
   const props = await viewer.IFC.getProperties(modelID, id, true, false);
-
+  console.log("properties", props);
   createPropertiesMenu(props);
 
   document.getElementById("ifc-property-menu").style.display = "initial";
   propertiesButton.classList.add("active");
 
   if (clippingPlanesActive) {
-    viewer.clipper.createPlane();
+    viewer.clipper.createPlane(); // tạo một mặt phẳng để cắt hình 3D
   }
 
   if (measurementsActive) {
+    // phương thức tạo các kích thước trên mô hình 3D. Giúp đo lường và hiển thị các kích thước của phần tử trong mô hình
     viewer.dimensions.create();
   }
 };
@@ -138,6 +143,7 @@ clipButton.onclick = () => {
   }
 };
 
+// bắt sự kiện khi user nhấn chuột phải or con lăn
 window.onauxclick = () => {
   if (clippingPlanesActive) {
     viewer.clipper.createPlane();
@@ -164,6 +170,7 @@ window.onkeydown = (event) => {
 const annotationsButton = document.getElementById("annotationsButton");
 let measurementsActive = false;
 
+// toggle đo khoảng cách
 annotationsButton.onclick = () => {
   viewer.dimensions.active = true;
   viewer.dimensions.previewActive = true;
@@ -206,6 +213,8 @@ async function getAll(category) {
 }
 
 // Creates a new subset containing all elements of a category
+
+// highlight property when user cursor
 async function newSubsetOfType(category) {
   const ids = await getAll(category);
   return viewer.IFC.loader.ifcManager.createSubset({
@@ -224,6 +233,7 @@ async function setupAllCategories() {
   const allCategories = Object.values(categories);
   for (let i = 0; i < allCategories.length; i++) {
     const category = allCategories[i];
+    // console.log("category: ", category);
     await setupCategory(category);
   }
 }
@@ -237,6 +247,7 @@ async function setupCategory(category) {
 // Sets up the checkbox event to hide / show elements
 function setupCheckBox(category) {
   const name = getName(category);
+  // console.log("name categories ", name);
   const checkBox = document.getElementById(name);
   checkBox.addEventListener("change", (event) => {
     const checked = event.target.checked;
@@ -323,7 +334,6 @@ function createSimpleChild(parent, node) {
 
 //IFC properties menu functions
 function createPropertiesMenu(properties) {
-
   removeAllChildren(propsGUI);
 
   delete properties.psets;
@@ -359,3 +369,149 @@ function removeAllChildren(element) {
     element.removeChild(element.firstChild);
   }
 }
+
+// window.onauxclick = () => viewer.IFC.selector.highlightIfcItem();
+const plusButton = document.getElementById("plus-button");
+
+let plusActiveButton = false;
+plusButton.onclick = async () => {
+  plusActiveButton = !plusActiveButton;
+  if (plusActiveButton) {
+    //   fetch("./models/Duplex-A-MEP.ifc")
+    //     .then((response) => response.text())
+    //     .then((data) => {
+    //       // This will send the file data to our LoadFileData method
+    //       console.log("data", data);
+    //       LoadFileData(data);
+    //     });
+    // await viewer.dropbox.loadDropboxIfc();
+
+    // remove model
+    // viewer.dispose();
+    plusButton.classList.add("active");
+  } else {
+    plusButton.classList.remove("active");
+  }
+};
+
+*/
+
+/// MAPBOX
+import {
+  Matrix4,
+  Vector3,
+  DirectionalLight,
+  AmbientLight,
+  PerspectiveCamera,
+  WebGLRenderer,
+  Scene,
+} from "three";
+import { IFCLoader } from "web-ifc-three/IFCLoader";
+
+mapboxgl.accessToken =
+  "pk.eyJ1IjoiZGluaHR1MDgwNjAxIiwiYSI6ImNsbGxwcnRlcTI4d28zY21rYmh6Z205eHQifQ.XyjAMhumCi9ztQYI-1jLSw";
+const map = new mapboxgl.Map({
+  container: "map", // chứa map
+  style: "mapbox://styles/mapbox/streets-v11", // style url
+  zoom: 17.48, // mức zoom
+  center: [106.7188358, 10.7886464], // toạ độ khi map render lần đầu
+  pitch: 75, // góc nghiêng của map
+  bearing: -80, // góc quay của bản đồ
+  antialias: true,
+});
+
+const modelOrigin = [106.7188358, 10.7886464];
+const modelAltitude = 0;
+const modelRotate = [Math.PI / 2, 0.72, 0];
+
+// translate to map coordinates
+const modelAsMercatorCoordinate = mapboxgl.MercatorCoordinate.fromLngLat(
+  modelOrigin,
+  modelAltitude
+);
+
+const modelTransform = {
+  translateX: modelAsMercatorCoordinate.x,
+  translateY: modelAsMercatorCoordinate.y,
+  translateZ: modelAsMercatorCoordinate.z,
+  rotateX: modelRotate[0],
+  rotateY: modelRotate[1],
+  rotateZ: modelRotate[2],
+  scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits(),
+};
+
+const scene = new Scene();
+const camera = new PerspectiveCamera();
+const renderer = new WebGLRenderer({
+  // here we inject our Three.js scene into Mapbox
+  canvas: map.getCanvas(),
+  antialias: true,
+});
+renderer.autoClear = false;
+
+const customLayer = {
+  id: "3d-model",
+  type: "custom",
+  renderingMode: "3d",
+
+  onAdd: function () {
+    //load model
+    const ifcLoader = new IFCLoader();
+    ifcLoader.ifcManager.setWasmPath("./");
+    ifcLoader.load("./models/Duplex-A-MEP.ifc", function (model) {
+      scene.add(model);
+    });
+
+    //add lighting
+    const directionalLight = new DirectionalLight(0x404040);
+    const directionalLight2 = new DirectionalLight(0x404040);
+    const ambientLight = new AmbientLight(0x404040, 3);
+    directionalLight.position.set(0, -70, 100).normalize();
+    directionalLight2.position.set(0, 70, 100).normalize();
+
+    scene.add(directionalLight, directionalLight2, ambientLight);
+  },
+
+  render: function (gl, matrix) {
+    //apply model transformations
+    const rotationX = new Matrix4().makeRotationAxis(
+      new Vector3(1, 0, 0),
+      modelTransform.rotateX
+    );
+    const rotationY = new Matrix4().makeRotationAxis(
+      new Vector3(0, 1, 0),
+      modelTransform.rotateY
+    );
+    const rotationZ = new Matrix4().makeRotationAxis(
+      new Vector3(0, 0, 1),
+      modelTransform.rotateZ
+    );
+
+    const m = new Matrix4().fromArray(matrix);
+    const l = new Matrix4()
+      .makeTranslation(
+        modelTransform.translateX,
+        modelTransform.translateY,
+        modelTransform.translateZ
+      )
+      .scale(
+        new Vector3(
+          modelTransform.scale,
+          -modelTransform.scale,
+          modelTransform.scale
+        )
+      )
+      .multiply(rotationX)
+      .multiply(rotationY)
+      .multiply(rotationZ);
+
+    camera.projectionMatrix = m.multiply(l);
+    renderer.resetState();
+    renderer.render(scene, camera);
+    map.triggerRepaint();
+  },
+};
+
+map.on("style.load", () => {
+  map.addLayer(customLayer, "waterway-label");
+});

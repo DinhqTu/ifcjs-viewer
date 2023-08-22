@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"></script> -->
     <title>Document</title>
-</head>
-<body>
-
-  <header>
-    <img class="spinning logo" src="./svgs/ifcjs-logo.svg" alt="IFC.js logo">
-    <h3>IFC.js viewer</h3>
-    <h3>Model list</h3>
-</header>
-  <section id="projects-container" class="project-list">
-    </section>
-    <script type="module" src= "bundlemodellist.js"></script>
-</body>
+  </head>
+  <body>
+    <header>
+      <img
+        class="spinning logo"
+        src="./svgs/ifcjs-logo.svg"
+        alt="IFC.js logo"
+      />
+      <h3>IFC.js viewer</h3>
+      <h3>Model list</h3>
+    </header>
+    <section id="projects-container" class="project-list"></section>
+    <input
+      type="file"
+      name="load"
+      id="file-input"
+      accept=".ifc, .ifcXML, .ifcZIP"
+      style="margin: 0 auto; display: flex"
+    />
+    <canvas></canvas>
+    <script type="module" src="bundlemodellist.js"></script>
+  </body>
 </html>
